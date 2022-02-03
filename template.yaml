@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Pausar clusters redshift
+Parameters:
+  role:
+    Type: String  
+Resources:
+  # Criar função lambda agendada
+  lambdafunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: dataops-pause-redshift # nome da função
+      Handler: app.lambda_handler # nome do arquivo e método de onde está a função
+      Runtime: python3.9 # ambiente de execução
+      CodeUri: ./app # local onde estarão os arquivos da função
+      Description: Pausar Clusters Redshift.
+      MemorySize: 128 # memória utilizada pela funçãop
+      Timeout: 300 # tempo máximo de execução, em segundos
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/${role} # IAM role da função para permissões a outros recursos da AWS
+      Events: # Evento agendado para execução
+        ScheduledFunction:
+          Type: Schedule
+          Properties:
+            Schedule: cron(00 02 * * ? *) # executa todo dia às 02 da manhã
+            Name: dataops-agenda-pause-redshift
+            
